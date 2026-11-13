@@ -26,6 +26,7 @@ class ThermalModel(nn.Module):
         self.pool = nn.AvgPool2d(2, 2)
         self.flatten = nn.Flatten()
         self.activation = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
 
 
     def forward(self, x):
@@ -45,5 +46,5 @@ class ThermalModel(nn.Module):
 
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
-        x = self.activation(self.fc3(x))
+        x = self.sigmoid(self.fc3(x))
         return x
