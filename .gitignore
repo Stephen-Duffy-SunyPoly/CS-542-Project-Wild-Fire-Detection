@@ -1,0 +1,7 @@
+/data/
+/venv/
+.venv/
+/pyproject.toml
+/uv.lock
+.idea/
+*.pth
