@@ -93,8 +93,7 @@ class GenericRGBDataset(Dataset):
         return len(self.labels)
 
     def __getitem__(self, index):
-        #todo reshuffle channel order
-        return torch.from_numpy(self.images[index]).to(device), torch.from_numpy(np.array([self.labels[index]], dtype=np.float32)).to(device)
+        return torch.from_numpy(np.transpose(self.images[index],[2, 0, 1])).to(device), torch.from_numpy(np.array([self.labels[index]], dtype=np.float32)).to(device)
 
 def creatThermalDataLoaders():
     #step 1 load the data
