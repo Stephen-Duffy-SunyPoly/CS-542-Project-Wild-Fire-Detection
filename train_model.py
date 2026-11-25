@@ -1,4 +1,5 @@
 from thermalModel import ThermalModel
+from imageModel import ImageModel
 import dataLoad
 import torch
 from torch import nn
@@ -70,7 +71,8 @@ class ModelTrainer:
         self.epochs = epochs
         self.learning_rate = lr
         self.loss_fn = nn.BCELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        #build an optimizer that only modifies components that are not frozen
+        self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=self.learning_rate)
         self.data_loader = data_loader
         self.name = name
 
@@ -99,16 +101,42 @@ def load_thermal_model(create=False):
         model = model.to(dataLoad.device)
     return model
 
+def load_Image_model(create=False):
+    model = None
+    if create:
+        model = ImageModel().to(dataLoad.device)
+    else:
+        model = ImageModel()
+        model.load_state_dict(torch.load('image_model.pth', map_location=torch.device('cpu')))
+        # this allows for it to run on a device different than the one it was trained on
+        model = model.to(dataLoad.device)
+    return model
+
+to_train="image"
 
 if __name__ == '__main__':
-    dataLoad.loadThermalData()
-    thermal_model = load_thermal_model(True)
+    if to_train == "thermal":
+        dataLoad.loadThermalData()
+        thermal_model = load_thermal_model(True)
 
-    model_trainer = ModelTrainer(thermal_model, dataLoad.thermal_train_data_loader,"thermal", 0.0001, 100)
-    model_trainer.train(validation_data_loader=dataLoad.thermal_validation_data_loader)
-    torch.save(thermal_model.state_dict(), "thermal_model.pth")
-    print("done, saved thermal_model.pth")
-    _, train_acc = test_function(thermal_model, dataLoad.thermal_train_data_loader, nn.BCELoss())
-    print("train accuracy: ", train_acc)
-    _, val_acc = test_function(thermal_model, dataLoad.thermal_validation_data_loader, nn.BCELoss())
-    print("validation accuracy: ", val_acc)
+        model_trainer = ModelTrainer(thermal_model, dataLoad.thermal_train_data_loader,"thermal", 0.0001, 100)
+        model_trainer.train(validation_data_loader=dataLoad.thermal_validation_data_loader)
+        torch.save(thermal_model.state_dict(), "thermal_model.pth")
+        print("done, saved thermal_model.pth")
+        _, train_acc = test_function(thermal_model, dataLoad.thermal_train_data_loader, nn.BCELoss())
+        print("train accuracy: ", train_acc)
+        _, val_acc = test_function(thermal_model, dataLoad.thermal_validation_data_loader, nn.BCELoss())
+        print("validation accuracy: ", val_acc)
+
+    elif to_train == "image":
+        dataLoad.loadRGBData()
+        image_model = load_Image_model(True)
+
+        model_trainer = ModelTrainer(image_model, dataLoad.rgb_train_data_loader, "image", 0.0001, 100)
+        model_trainer.train(validation_data_loader=dataLoad.rgb_validation_data_loader)
+        torch.save(image_model.state_dict(), "image_model.pth")
+        print("done, saved image_model.pth")
+        _, train_acc = test_function(image_model, dataLoad.rgb_train_data_loader, nn.BCELoss())
+        print("train accuracy: ", train_acc)
+        _, val_acc = test_function(image_model, dataLoad.rgb_validation_data_loader, nn.BCELoss())
+        print("validation accuracy: ", val_acc)
