@@ -101,6 +101,7 @@ def load_thermal_model(create=False):
 
 
 if __name__ == '__main__':
+    dataLoad.loadThermalData()
     thermal_model = load_thermal_model(True)
 
     model_trainer = ModelTrainer(thermal_model, dataLoad.thermal_train_data_loader,"thermal", 0.0001, 100)

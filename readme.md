@@ -9,5 +9,6 @@ libraries:
 - numpy
 - tifffile
 - imagecodecs
+- opencv-contrib-python
 
 Place the extracted data set into the data folder
